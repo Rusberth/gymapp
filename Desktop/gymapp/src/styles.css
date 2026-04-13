@@ -1,1 +1,58 @@
 /* You can add global styles to this file, and also import other style files */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+}
+
+.nav-link.active {
+  font-weight: 600;
+  border-bottom: 2px solid #ffc107;
+}
+
+.card {
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-content {
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  border-radius: 14px 14px 0 0;
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.badge {
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+.alert {
+  border-radius: 10px;
+  border: none;
+}

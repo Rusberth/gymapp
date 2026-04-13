@@ -1,0 +1,139 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-danger mb-0">
+      <i class="bi bi-lightning-charge-fill me-2"></i>Gestión de Rutinas
+    </h2>
+    <button class="btn btn-danger" (click)="abrirModal()">
+      <i class="bi bi-plus-circle-fill me-1"></i> Nueva Rutina
+    </button>
+  </div>
+
+  <div *ngIf="mensaje" class="alert alert-{{tipoMensaje}}">{{ mensaje }}</div>
+
+  <div class="row g-3">
+    <div class="col-md-6 col-lg-4" *ngFor="let r of rutinas">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header d-flex justify-content-between align-items-center"
+             [class.bg-success]="r.nivel === 'Principiante'"
+             [class.bg-warning]="r.nivel === 'Intermedio'"
+             [class.bg-danger]="r.nivel === 'Avanzado'"
+             style="color: white">
+          <strong>{{ r.nombre }}</strong>
+          <span class="badge bg-white text-dark">{{ r.nivel }}</span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-2">
+            <i class="bi bi-person-fill me-1"></i>{{ r.usuarioNombre }}
+          </p>
+          <p class="mb-2">{{ r.descripcion }}</p>
+          <div class="mb-2">
+            <small class="text-muted">Ejercicios:</small>
+            <p class="mb-0 small">{{ r.ejercicios }}</p>
+          </div>
+          <div class="d-flex gap-3 mt-3">
+            <div class="text-center">
+              <div class="fw-bold fs-5 text-danger">{{ r.series }}</div>
+              <small class="text-muted">Series</small>
+            </div>
+            <div class="text-center">
+              <div class="fw-bold fs-5 text-danger">{{ r.repeticiones }}</div>
+              <small class="text-muted">Reps</small>
+            </div>
+            <div class="text-center flex-grow-1">
+              <div class="fw-bold text-danger">{{ r.diasSemana }}</div>
+              <small class="text-muted">Días</small>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-end gap-2">
+          <button class="btn btn-sm btn-outline-warning" (click)="abrirModal(r)">
+            <i class="bi bi-pencil-fill"></i> Editar
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="eliminar(r.id!)">
+            <i class="bi bi-trash-fill"></i> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-12" *ngIf="rutinas.length === 0">
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        No hay rutinas registradas
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" [class.show]="mostrarModal"
+     [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-lightning-charge-fill me-2"></i>
+          {{ editando ? 'Editar' : 'Nueva' }} Rutina
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Usuario</label>
+            <select class="form-select" [(ngModel)]="rutinaForm.usuarioId">
+              <option value="0" disabled>Seleccione un usuario</option>
+              <option *ngFor="let u of usuarios" [value]="u.id">
+                {{ u.nombre }} {{ u.apellido }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre de la Rutina</label>
+            <input class="form-control" [(ngModel)]="rutinaForm.nombre"
+              placeholder="Ej: Rutina de pecho">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Descripción</label>
+            <textarea class="form-control" [(ngModel)]="rutinaForm.descripcion"
+              rows="2" placeholder="Descripción de la rutina"></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Ejercicios</label>
+            <textarea class="form-control" [(ngModel)]="rutinaForm.ejercicios"
+              rows="2" placeholder="Ej: Press banca, aperturas, fondos..."></textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Series</label>
+            <input class="form-control" type="number"
+              [(ngModel)]="rutinaForm.series" min="1" max="20">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Repeticiones</label>
+            <input class="form-control" type="number"
+              [(ngModel)]="rutinaForm.repeticiones" min="1" max="100">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Nivel</label>
+            <select class="form-select" [(ngModel)]="rutinaForm.nivel">
+              <option value="Principiante">Principiante</option>
+              <option value="Intermedio">Intermedio</option>
+              <option value="Avanzado">Avanzado</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Días de la Semana</label>
+            <input class="form-control" [(ngModel)]="rutinaForm.diasSemana"
+              placeholder="Ej: Lunes, Miércoles, Viernes">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-danger" (click)="guardar()">
+          <i class="bi bi-save me-1"></i>{{ editando ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="mostrarModal" *ngIf="mostrarModal"></div>
