@@ -53,9 +53,10 @@ import { AuthService } from '../../services/auth.service';
         </form>
 
         <div class="login-help mt-4">
-          <p class="mb-2"><strong>Accesos iniciales</strong></p>
+          <!--<p class="mb-2"><strong>Accesos iniciales</strong></p>
           <p class="mb-1">Admin: <code>admin</code> / <code>admin123</code></p>
-          <p class="mb-0">Recepción: <code>recepcion</code> / <code>recepcion123</code></p>
+          <p class="mb-0">Recepción: <code>recepcion</code> / <code>recepcion123</code></p>-->
+          <p class="mb-0">Si no tienes una cuenta, contacta al administrador del sistema.</p>
         </div>
       </div>
     </div>
