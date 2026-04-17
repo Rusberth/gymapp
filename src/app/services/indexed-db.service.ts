@@ -3,10 +3,10 @@ import { Injectable } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class IndexedDbService {
   private dbName = 'GymAppDB';
-  private dbVersion = 1;
-    private db: IDBDatabase | null = null;
+  private dbVersion = 2;
+  private db: IDBDatabase | null = null;
 
-    async openDB(): Promise<IDBDatabase> {
+  async openDB(): Promise<IDBDatabase> {
     if (this.db) return this.db;
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion);
@@ -26,6 +26,16 @@ export class IndexedDbService {
           const rutinasStore = db.createObjectStore('rutinas', { keyPath: 'id', autoIncrement: true });
           rutinasStore.createIndex('usuarioId', 'usuarioId', { unique: false });
         }
+        if (!db.objectStoreNames.contains('pagos')) {
+          const pagosStore = db.createObjectStore('pagos', { keyPath: 'id', autoIncrement: true });
+          pagosStore.createIndex('usuarioId', 'usuarioId', { unique: false });
+          pagosStore.createIndex('fechaPago', 'fechaPago', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('asistencias')) {
+          const asistenciasStore = db.createObjectStore('asistencias', { keyPath: 'id', autoIncrement: true });
+          asistenciasStore.createIndex('usuarioId', 'usuarioId', { unique: false });
+          asistenciasStore.createIndex('fecha', 'fecha', { unique: false });
+        }
       };
 
       request.onsuccess = (event) => {
@@ -35,7 +45,7 @@ export class IndexedDbService {
       request.onerror = (event) => reject((event.target as IDBOpenDBRequest).error);
     });
   }
-async getAll<T>(storeName: string): Promise<T[]> {
+  async getAll<T>(storeName: string): Promise<T[]> {
     const db = await this.openDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readonly');

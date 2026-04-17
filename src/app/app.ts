@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { DemoDataService } from './services/demo-data.service';
 
 @Component({
   selector: 'app-root',
@@ -8,7 +9,15 @@ import { NavbarComponent } from './components/navbar/navbar.component';
   imports: [RouterOutlet, NavbarComponent],
   template: `
     <app-navbar></app-navbar>
-    <router-outlet></router-outlet>
+    <main class="app-shell">
+      <router-outlet></router-outlet>
+    </main>
   `
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private demoDataService: DemoDataService) {}
+
+  async ngOnInit() {
+    await this.demoDataService.ensureDemoData();
+  }
+}

@@ -1,0 +1,125 @@
+<div class="page-shell">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Asistencia</h1>
+      <p class="page-subtitle">Registra ingresos, controla presencia diaria y frecuencia semanal.</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirModal()">
+      <i class="bi bi-person-check-fill me-2"></i>Registrar asistencia
+    </button>
+  </div>
+
+  <div class="section-grid mb-4">
+    <div style="grid-column: span 4;"><div class="metric-card tone-green"><p class="metric-label">Presentes hoy</p><h3 class="metric-value">{{ presentesHoy }}</h3><p class="mt-2">Entradas confirmadas</p></div></div>
+    <div style="grid-column: span 4;"><div class="metric-card tone-red"><p class="metric-label">Faltas hoy</p><h3 class="metric-value">{{ faltasHoy }}</h3><p class="mt-2">Ausencias registradas</p></div></div>
+    <div style="grid-column: span 4;"><div class="metric-card tone-blue"><p class="metric-label">Frecuencia semanal</p><h3 class="metric-value">{{ frecuenciaSemana }}</h3><p class="mt-2">Asistencias en 7 días</p></div></div>
+  </div>
+
+  <div *ngIf="mensaje" class="alert alert-{{ tipoMensaje }} pro-panel mb-4">{{ mensaje }}</div>
+
+  <div class="toolbar-card mb-4">
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <label class="form-label fw-semibold">Buscar asistencia</label>
+        <input class="form-control search-input" [(ngModel)]="searchTerm" placeholder="Cliente o área de entrenamiento">
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label fw-semibold">Fecha</label>
+        <input class="form-control filter-select" type="date" [(ngModel)]="fechaFiltro">
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Área</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let asistencia of asistenciasFiltradas; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ asistencia.usuarioNombre }}</strong></td>
+            <td>{{ asistencia.fecha }}</td>
+            <td>{{ asistencia.horaEntrada }}</td>
+            <td>{{ asistencia.area }}</td>
+            <td><span class="soft-badge" [class.green]="asistencia.estado === 'Asistio'" [class.red]="asistencia.estado === 'Falta'">{{ asistencia.estado }}</span></td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-warning me-2" (click)="abrirModal(asistencia)"><i class="bi bi-pencil-fill"></i></button>
+              <button class="btn btn-sm btn-outline-danger" (click)="eliminar(asistencia.id!)"><i class="bi bi-trash-fill"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="asistenciasFiltradas.length === 0">
+            <td colspan="7"><div class="empty-state"><i class="bi bi-clipboard2-check"></i>No hay asistencias para los filtros seleccionados.</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-person-check-fill me-2"></i>{{ editando ? 'Editar asistencia' : 'Nueva asistencia' }}</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Cliente</label>
+            <select class="form-select" [(ngModel)]="asistenciaForm.usuarioId">
+              <option [ngValue]="0">Selecciona un cliente</option>
+              <option *ngFor="let u of usuarios" [ngValue]="u.id">{{ u.nombre }} {{ u.apellido }}</option>
+            </select>
+            <small class="text-danger" *ngIf="errors['usuarioId']">{{ errors['usuarioId'] }}</small>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Fecha</label>
+            <input class="form-control" type="date" [(ngModel)]="asistenciaForm.fecha">
+            <small class="text-danger" *ngIf="errors['fecha']">{{ errors['fecha'] }}</small>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Hora</label>
+            <input class="form-control" type="time" [(ngModel)]="asistenciaForm.horaEntrada">
+            <small class="text-danger" *ngIf="errors['horaEntrada']">{{ errors['horaEntrada'] }}</small>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Área</label>
+            <select class="form-select" [(ngModel)]="asistenciaForm.area">
+              <option value="Sala">Sala</option>
+              <option value="Cardio">Cardio</option>
+              <option value="Funcional">Funcional</option>
+              <option value="Personalizado">Personalizado</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Estado</label>
+            <select class="form-select" [(ngModel)]="asistenciaForm.estado">
+              <option value="Asistio">Asistio</option>
+              <option value="Falta">Falta</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observacion</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="asistenciaForm.observacion" placeholder="Detalle opcional"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()"><i class="bi bi-save me-2"></i>{{ editando ? 'Actualizar' : 'Guardar' }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="mostrarModal" *ngIf="mostrarModal"></div>

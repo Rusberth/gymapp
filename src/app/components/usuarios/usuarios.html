@@ -1,106 +1,161 @@
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-primary mb-0">
-      <i class="bi bi-people-fill me-2"></i>Gestión de Usuarios
-    </h2>
+<div class="page-shell">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Clientes</h1>
+      <p class="page-subtitle">Gestiona fichas, contacto y altas recientes del gimnasio.</p>
+    </div>
     <button class="btn btn-primary" (click)="abrirModal()">
-      <i class="bi bi-person-plus-fill me-1"></i> Nuevo Usuario
+      <i class="bi bi-person-plus-fill me-2"></i>Nuevo cliente
     </button>
   </div>
 
-  <div *ngIf="mensaje" class="alert alert-{{tipoMensaje}}">
-    {{ mensaje }}
+  <div class="section-grid mb-4">
+    <div style="grid-column: span 4;">
+      <div class="metric-card tone-blue">
+        <p class="metric-label">Clientes totales</p>
+        <h3 class="metric-value">{{ totalUsuarios }}</h3>
+        <p class="mt-2">Base completa registrada</p>
+      </div>
+    </div>
+    <div style="grid-column: span 4;">
+      <div class="metric-card tone-green">
+        <p class="metric-label">Altas recientes</p>
+        <h3 class="metric-value">{{ nuevosEsteMes }}</h3>
+        <p class="mt-2">Registrados en los últimos 30 días</p>
+      </div>
+    </div>
+    <div style="grid-column: span 4;">
+      <div class="metric-card tone-gold">
+        <p class="metric-label">Edad promedio</p>
+        <h3 class="metric-value">{{ promedioEdad }}</h3>
+        <p class="mt-2">Perfil general de la base actual</p>
+      </div>
+    </div>
   </div>
 
-  <div class="card shadow-sm">
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-dark">
-            <tr>
-              <th>#</th>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Edad</th>
-              <th>Teléfono</th>
-              <th>Registro</th>
-              <th class="text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let u of usuarios; let i = index">
-              <td>{{ i + 1 }}</td>
-              <td><strong>{{ u.nombre }} {{ u.apellido }}</strong></td>
-              <td>{{ u.email }}</td>
-              <td>{{ u.edad }} años</td>
-              <td>{{ u.telefono }}</td>
-              <td>{{ u.fechaRegistro }}</td>
-              <td class="text-center">
-                <button class="btn btn-sm btn-outline-warning me-1" (click)="abrirModal(u)">
-                  <i class="bi bi-pencil-fill"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" (click)="eliminar(u.id!)">
-                  <i class="bi bi-trash-fill"></i>
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="usuarios.length === 0">
-              <td colspan="7" class="text-center text-muted py-4">
-                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                No hay usuarios registrados
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <div *ngIf="mensaje" class="alert alert-{{ tipoMensaje }} pro-panel mb-4">{{ mensaje }}</div>
+
+  <div class="toolbar-card mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-7">
+        <label class="form-label fw-semibold">Buscar cliente</label>
+        <input
+          class="form-control search-input"
+          [(ngModel)]="searchTerm"
+          placeholder="Busca por nombre, correo o teléfono"
+        >
       </div>
+      <div class="col-lg-5">
+        <div class="toolbar-card h-100 border-0 shadow-none p-3">
+          <span class="soft-badge blue mb-2">Resultados</span>
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>{{ filteredUsuarios.length }} clientes visibles</strong>
+            <span class="helper-text">{{ totalUsuarios }} registrados</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Contacto</th>
+            <th>Edad</th>
+            <th>Registro</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of filteredUsuarios; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <strong class="d-block">{{ u.nombre }} {{ u.apellido }}</strong>
+              <span class="helper-text">ID {{ u.id }}</span>
+            </td>
+            <td>
+              <div>{{ u.email }}</div>
+              <span class="helper-text">{{ u.telefono }}</span>
+            </td>
+            <td>{{ u.edad }} años</td>
+            <td>{{ u.fechaRegistro }}</td>
+            <td class="text-center">
+              <a class="btn btn-sm btn-outline-primary me-2" [routerLink]="['/usuarios', u.id]">
+                <i class="bi bi-eye-fill"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-warning me-2" (click)="abrirModal(u)">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="eliminar(u.id!)">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredUsuarios.length === 0">
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="bi bi-search"></i>
+                No se encontraron clientes con los filtros actuales.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" [class.show]="mostrarModal"
-     [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
+<div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">
-          <i class="bi bi-person-fill me-2"></i>
-          {{ editando ? 'Editar Usuario' : 'Nuevo Usuario' }}
+          <i class="bi bi-person-badge-fill me-2"></i>{{ editando ? 'Editar cliente' : 'Nuevo cliente' }}
         </h5>
         <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
       </div>
       <div class="modal-body">
         <div class="row g-3">
-          <div class="col-6">
+          <div class="col-sm-6">
             <label class="form-label fw-semibold">Nombre</label>
-            <input class="form-control" [(ngModel)]="usuarioForm.nombre" placeholder="Nombre">
+            <input class="form-control" [(ngModel)]="usuarioForm.nombre" placeholder="Ej. Carla">
+            <small class="text-danger" *ngIf="errors['nombre']">{{ errors['nombre'] }}</small>
           </div>
-          <div class="col-6">
+          <div class="col-sm-6">
             <label class="form-label fw-semibold">Apellido</label>
-            <input class="form-control" [(ngModel)]="usuarioForm.apellido" placeholder="Apellido">
+            <input class="form-control" [(ngModel)]="usuarioForm.apellido" placeholder="Ej. Mendoza">
+            <small class="text-danger" *ngIf="errors['apellido']">{{ errors['apellido'] }}</small>
           </div>
-          <div class="col-6">
-            <label class="form-label fw-semibold">Email</label>
-            <input class="form-control" type="email" [(ngModel)]="usuarioForm.email" placeholder="correo@email.com">
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Correo electrónico</label>
+            <input class="form-control" type="email" [(ngModel)]="usuarioForm.email" placeholder="correo@cliente.com">
+            <small class="text-danger" *ngIf="errors['email']">{{ errors['email'] }}</small>
           </div>
-          <div class="col-6">
+          <div class="col-sm-6">
             <label class="form-label fw-semibold">Teléfono</label>
             <input class="form-control" [(ngModel)]="usuarioForm.telefono" placeholder="70000000">
+            <small class="text-danger" *ngIf="errors['telefono']">{{ errors['telefono'] }}</small>
           </div>
-          <div class="col-6">
+          <div class="col-sm-6">
             <label class="form-label fw-semibold">Edad</label>
-            <input class="form-control" type="number" [(ngModel)]="usuarioForm.edad" min="10" max="100">
+            <input class="form-control" type="number" [(ngModel)]="usuarioForm.edad" min="10" max="90">
+            <small class="text-danger" *ngIf="errors['edad']">{{ errors['edad'] }}</small>
           </div>
-          <div class="col-6">
-            <label class="form-label fw-semibold">Fecha de Registro</label>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Fecha de registro</label>
             <input class="form-control" type="date" [(ngModel)]="usuarioForm.fechaRegistro">
+            <small class="text-danger" *ngIf="errors['fechaRegistro']">{{ errors['fechaRegistro'] }}</small>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
         <button class="btn btn-primary" (click)="guardar()">
-          <i class="bi bi-save me-1"></i>{{ editando ? 'Actualizar' : 'Guardar' }}
+          <i class="bi bi-save me-2"></i>{{ editando ? 'Actualizar' : 'Guardar' }}
         </button>
       </div>
     </div>

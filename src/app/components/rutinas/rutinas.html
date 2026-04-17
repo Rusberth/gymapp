@@ -1,116 +1,162 @@
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-danger mb-0">
-      <i class="bi bi-lightning-charge-fill me-2"></i>Gestión de Rutinas
-    </h2>
+<div class="page-shell">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Rutinas</h1>
+      <p class="page-subtitle">Organiza planes de entrenamiento por cliente, nivel y frecuencia.</p>
+    </div>
     <button class="btn btn-danger" (click)="abrirModal()">
-      <i class="bi bi-plus-circle-fill me-1"></i> Nueva Rutina
+      <i class="bi bi-plus-circle-fill me-2"></i>Nueva rutina
     </button>
   </div>
 
-  <div *ngIf="mensaje" class="alert alert-{{tipoMensaje}}">{{ mensaje }}</div>
+  <div class="section-grid mb-4">
+    <div style="grid-column: span 4;">
+      <div class="metric-card tone-red">
+        <p class="metric-label">Rutinas totales</p>
+        <h3 class="metric-value">{{ totalRutinas }}</h3>
+        <p class="mt-2">Programas cargados en el sistema</p>
+      </div>
+    </div>
+    <div style="grid-column: span 4;">
+      <div class="metric-card tone-gold">
+        <p class="metric-label">Nivel avanzado</p>
+        <h3 class="metric-value">{{ rutinasAvanzadas }}</h3>
+        <p class="mt-2">Planes de mayor exigencia</p>
+      </div>
+    </div>
+    <div style="grid-column: span 4;">
+      <div class="metric-card tone-blue">
+        <p class="metric-label">Promedio de series</p>
+        <h3 class="metric-value">{{ promedioSeries }}</h3>
+        <p class="mt-2">Carga media por rutina</p>
+      </div>
+    </div>
+  </div>
 
-  <div class="row g-3">
-    <div class="col-md-6 col-lg-4" *ngFor="let r of rutinas">
-      <div class="card h-100 shadow-sm border-0">
-        <div class="card-header d-flex justify-content-between align-items-center"
-             [class.bg-success]="r.nivel === 'Principiante'"
-             [class.bg-warning]="r.nivel === 'Intermedio'"
-             [class.bg-danger]="r.nivel === 'Avanzado'"
-             style="color: white">
-          <strong>{{ r.nombre }}</strong>
-          <span class="badge bg-white text-dark">{{ r.nivel }}</span>
-        </div>
-        <div class="card-body">
-          <p class="text-muted small mb-2">
-            <i class="bi bi-person-fill me-1"></i>{{ r.usuarioNombre }}
-          </p>
-          <p class="mb-2">{{ r.descripcion }}</p>
-          <div class="mb-2">
-            <small class="text-muted">Ejercicios:</small>
-            <p class="mb-0 small">{{ r.ejercicios }}</p>
-          </div>
-          <div class="d-flex gap-3 mt-3">
-            <div class="text-center">
-              <div class="fw-bold fs-5 text-danger">{{ r.series }}</div>
-              <small class="text-muted">Series</small>
+  <div *ngIf="mensaje" class="alert alert-{{ tipoMensaje }} pro-panel mb-4">{{ mensaje }}</div>
+
+  <div class="toolbar-card mb-4">
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <label class="form-label fw-semibold">Buscar rutina</label>
+        <input class="form-control search-input" [(ngModel)]="searchTerm" placeholder="Busca por nombre, cliente o ejercicio">
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label fw-semibold">Nivel</label>
+        <select class="form-select filter-select" [(ngModel)]="nivelFiltro">
+          <option value="todos">Todos</option>
+          <option value="Principiante">Principiante</option>
+          <option value="Intermedio">Intermedio</option>
+          <option value="Avanzado">Avanzado</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-xl-4" *ngFor="let r of filteredRutinas">
+      <div class="content-card h-100 p-0 card-hover">
+        <div class="p-4 border-bottom">
+          <div class="d-flex justify-content-between gap-3 align-items-start">
+            <div>
+              <h3 class="h5 mb-1">{{ r.nombre }}</h3>
+              <p class="helper-text mb-0"><i class="bi bi-person-fill me-1"></i>{{ r.usuarioNombre }}</p>
             </div>
-            <div class="text-center">
-              <div class="fw-bold fs-5 text-danger">{{ r.repeticiones }}</div>
-              <small class="text-muted">Reps</small>
-            </div>
-            <div class="text-center flex-grow-1">
-              <div class="fw-bold text-danger">{{ r.diasSemana }}</div>
-              <small class="text-muted">Días</small>
-            </div>
+            <span class="soft-badge {{ getNivelClass(r.nivel) }}">{{ r.nivel }}</span>
           </div>
         </div>
-        <div class="card-footer bg-transparent d-flex justify-content-end gap-2">
+        <div class="p-4">
+          <p class="mb-3">{{ r.descripcion }}</p>
+          <div class="toolbar-card border-0 shadow-none px-0 pt-0">
+            <strong class="d-block mb-2">Ejercicios</strong>
+            <p class="helper-text mb-0">{{ r.ejercicios }}</p>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-4">
+              <div class="toolbar-card text-center h-100 border-0 shadow-none">
+                <strong class="d-block fs-4 text-danger">{{ r.series }}</strong>
+                <span class="helper-text">Series</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="toolbar-card text-center h-100 border-0 shadow-none">
+                <strong class="d-block fs-4 text-danger">{{ r.repeticiones }}</strong>
+                <span class="helper-text">Reps</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="toolbar-card text-center h-100 border-0 shadow-none">
+                <strong class="d-block fs-6 text-danger">{{ r.diasSemana }}</strong>
+                <span class="helper-text">Días</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 pt-0 d-flex justify-content-end gap-2">
           <button class="btn btn-sm btn-outline-warning" (click)="abrirModal(r)">
-            <i class="bi bi-pencil-fill"></i> Editar
+            <i class="bi bi-pencil-fill me-1"></i>Editar
           </button>
           <button class="btn btn-sm btn-outline-danger" (click)="eliminar(r.id!)">
-            <i class="bi bi-trash-fill"></i> Eliminar
+            <i class="bi bi-trash-fill me-1"></i>Eliminar
           </button>
         </div>
       </div>
     </div>
-    <div class="col-12" *ngIf="rutinas.length === 0">
-      <div class="text-center text-muted py-5">
-        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-        No hay rutinas registradas
+
+    <div class="col-12" *ngIf="filteredRutinas.length === 0">
+      <div class="content-card">
+        <div class="empty-state">
+          <i class="bi bi-lightning-charge"></i>
+          No hay rutinas que coincidan con los filtros actuales.
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" [class.show]="mostrarModal"
-     [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
+<div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title">
-          <i class="bi bi-lightning-charge-fill me-2"></i>
-          {{ editando ? 'Editar' : 'Nueva' }} Rutina
+          <i class="bi bi-lightning-charge-fill me-2"></i>{{ editando ? 'Editar rutina' : 'Nueva rutina' }}
         </h5>
         <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
       </div>
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold">Usuario</label>
+            <label class="form-label fw-semibold">Cliente</label>
             <select class="form-select" [(ngModel)]="rutinaForm.usuarioId">
-              <option value="0" disabled>Seleccione un usuario</option>
-              <option *ngFor="let u of usuarios" [value]="u.id">
-                {{ u.nombre }} {{ u.apellido }}
-              </option>
+              <option [ngValue]="0">Selecciona un cliente</option>
+              <option *ngFor="let u of usuarios" [ngValue]="u.id">{{ u.nombre }} {{ u.apellido }}</option>
             </select>
+            <small class="text-danger" *ngIf="errors['usuarioId']">{{ errors['usuarioId'] }}</small>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold">Nombre de la Rutina</label>
-            <input class="form-control" [(ngModel)]="rutinaForm.nombre"
-              placeholder="Ej: Rutina de pecho">
+            <label class="form-label fw-semibold">Nombre de la rutina</label>
+            <input class="form-control" [(ngModel)]="rutinaForm.nombre" placeholder="Ej. Torso superior">
+            <small class="text-danger" *ngIf="errors['nombre']">{{ errors['nombre'] }}</small>
           </div>
           <div class="col-12">
             <label class="form-label fw-semibold">Descripción</label>
-            <textarea class="form-control" [(ngModel)]="rutinaForm.descripcion"
-              rows="2" placeholder="Descripción de la rutina"></textarea>
+            <textarea class="form-control" [(ngModel)]="rutinaForm.descripcion" rows="2" placeholder="Objetivo general de la rutina"></textarea>
+            <small class="text-danger" *ngIf="errors['descripcion']">{{ errors['descripcion'] }}</small>
           </div>
           <div class="col-12">
             <label class="form-label fw-semibold">Ejercicios</label>
-            <textarea class="form-control" [(ngModel)]="rutinaForm.ejercicios"
-              rows="2" placeholder="Ej: Press banca, aperturas, fondos..."></textarea>
+            <textarea class="form-control" [(ngModel)]="rutinaForm.ejercicios" rows="3" placeholder="Ej. Press banca, aperturas, fondos"></textarea>
+            <small class="text-danger" *ngIf="errors['ejercicios']">{{ errors['ejercicios'] }}</small>
           </div>
           <div class="col-md-4">
             <label class="form-label fw-semibold">Series</label>
-            <input class="form-control" type="number"
-              [(ngModel)]="rutinaForm.series" min="1" max="20">
+            <input class="form-control" type="number" [(ngModel)]="rutinaForm.series" min="1" max="20">
+            <small class="text-danger" *ngIf="errors['series']">{{ errors['series'] }}</small>
           </div>
           <div class="col-md-4">
             <label class="form-label fw-semibold">Repeticiones</label>
-            <input class="form-control" type="number"
-              [(ngModel)]="rutinaForm.repeticiones" min="1" max="100">
+            <input class="form-control" type="number" [(ngModel)]="rutinaForm.repeticiones" min="1" max="100">
+            <small class="text-danger" *ngIf="errors['repeticiones']">{{ errors['repeticiones'] }}</small>
           </div>
           <div class="col-md-4">
             <label class="form-label fw-semibold">Nivel</label>
@@ -121,16 +167,16 @@
             </select>
           </div>
           <div class="col-12">
-            <label class="form-label fw-semibold">Días de la Semana</label>
-            <input class="form-control" [(ngModel)]="rutinaForm.diasSemana"
-              placeholder="Ej: Lunes, Miércoles, Viernes">
+            <label class="form-label fw-semibold">Días de entrenamiento</label>
+            <input class="form-control" [(ngModel)]="rutinaForm.diasSemana" placeholder="Ej. Lunes, miércoles y viernes">
+            <small class="text-danger" *ngIf="errors['diasSemana']">{{ errors['diasSemana'] }}</small>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
         <button class="btn btn-danger" (click)="guardar()">
-          <i class="bi bi-save me-1"></i>{{ editando ? 'Actualizar' : 'Guardar' }}
+          <i class="bi bi-save me-2"></i>{{ editando ? 'Actualizar' : 'Guardar' }}
         </button>
       </div>
     </div>

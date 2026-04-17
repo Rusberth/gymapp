@@ -1,0 +1,61 @@
+<div class="page-shell">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Reportes</h1>
+      <p class="page-subtitle">Indicadores clave para seguimiento comercial y operativo del gimnasio.</p>
+    </div>
+    <div class="d-flex gap-2">
+  <button class="btn btn-outline-danger btn-sm" (click)="exportarPDF()">
+    <i class="bi bi-file-earmark-pdf me-1"></i>Exportar PDF
+  </button>
+  <button class="btn btn-outline-success btn-sm" (click)="exportarExcel()">
+    <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+  </button>
+</div>
+  </div>
+
+  <div class="section-grid mb-4">
+    <div style="grid-column: span 3;"><div class="metric-card tone-green"><p class="metric-label">Ingresos</p><h3 class="metric-value">Bs {{ totalIngresos }}</h3><p class="mt-2">Pagos confirmados</p></div></div>
+    <div style="grid-column: span 3;"><div class="metric-card tone-blue"><p class="metric-label">Membresías activas</p><h3 class="metric-value">{{ membresiasActivas }}</h3><p class="mt-2">Clientes vigentes</p></div></div>
+    <div style="grid-column: span 3;"><div class="metric-card tone-gold"><p class="metric-label">Asistencias del mes</p><h3 class="metric-value">{{ asistenciasMes }}</h3><p class="mt-2">Check-ins registrados</p></div></div>
+    <div style="grid-column: span 3;"><div class="metric-card tone-red"><p class="metric-label">Clientes nuevos</p><h3 class="metric-value">{{ clientesNuevosMes }}</h3><p class="mt-2">Altas del mes actual</p></div></div>
+  </div>
+
+  <div class="section-grid">
+    <div style="grid-column: span 6;">
+      <div class="content-card p-4 h-100">
+        <h2 class="h4 mb-3">Cobros pendientes</h2>
+        <div *ngIf="pagosPendientes.length === 0" class="empty-state"><i class="bi bi-patch-check"></i>No hay pagos pendientes.</div>
+        <div *ngFor="let pago of pagosPendientes" class="toolbar-card mb-3">
+          <strong class="d-block">{{ pago.concepto }}</strong>
+          <span class="helper-text">Cliente ID {{ pago.usuarioId }} · {{ pago.fechaPago }}</span>
+          <div class="mt-2 fw-semibold">Bs {{ pago.monto }}</div>
+        </div>
+      </div>
+    </div>
+    <div style="grid-column: span 6;">
+      <div class="content-card p-4 h-100">
+        <h2 class="h4 mb-3">Membresías por vencer</h2>
+        <div *ngIf="membresiasPorVencer.length === 0" class="empty-state"><i class="bi bi-calendar2-check"></i>No hay vencimientos inmediatos.</div>
+        <div *ngFor="let membresia of membresiasPorVencer" class="toolbar-card mb-3">
+          <strong class="d-block">{{ membresia.tipo }}</strong>
+          <span class="helper-text">Cliente ID {{ membresia.usuarioId }} · vence {{ membresia.fechaFin }}</span>
+          <div class="mt-2 fw-semibold">Bs {{ membresia.precio }}</div>
+        </div>
+      </div>
+    </div>
+    <div style="grid-column: span 12;">
+      <div class="content-card p-4">
+        <h2 class="h4 mb-3">Rutinas por nivel</h2>
+        <div class="row g-3">
+          <div class="col-md-4" *ngFor="let item of rutinasPorNivel">
+            <div class="toolbar-card h-100">
+              <strong class="d-block">{{ item.nivel }}</strong>
+              <div class="display-6 fw-bold mt-2">{{ item.total }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

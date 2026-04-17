@@ -20,6 +20,9 @@ export class RutinasComponent implements OnInit {
   mostrarModal = false;
   mensaje = '';
   tipoMensaje = '';
+  searchTerm = '';
+  nivelFiltro = 'todos';
+  errors: Record<string, string> = {};
 
   constructor(
     private rutinaService: RutinaService,
@@ -29,6 +32,39 @@ export class RutinasComponent implements OnInit {
 
   async ngOnInit() {
     await this.cargarDatos();
+  }
+
+  get filteredRutinas(): Rutina[] {
+    const term = this.searchTerm.trim().toLowerCase();
+
+    return this.rutinas.filter((rutina) => {
+      const matchesTerm =
+        !term ||
+        rutina.nombre.toLowerCase().includes(term) ||
+        rutina.descripcion.toLowerCase().includes(term) ||
+        rutina.ejercicios.toLowerCase().includes(term) ||
+        (rutina.usuarioNombre ?? '').toLowerCase().includes(term);
+
+      const matchesNivel = this.nivelFiltro === 'todos' || rutina.nivel === this.nivelFiltro;
+      return matchesTerm && matchesNivel;
+    });
+  }
+
+  get totalRutinas(): number {
+    return this.rutinas.length;
+  }
+
+  get rutinasAvanzadas(): number {
+    return this.rutinas.filter((item) => item.nivel === 'Avanzado').length;
+  }
+
+  get promedioSeries(): number {
+    if (this.rutinas.length === 0) {
+      return 0;
+    }
+
+    const total = this.rutinas.reduce((sum, item) => sum + item.series, 0);
+    return Number((total / this.rutinas.length).toFixed(1));
   }
 
   initForm(): Rutina {
@@ -49,53 +85,71 @@ export class RutinasComponent implements OnInit {
       this.rutinaService.getAll(),
       this.usuarioService.getAll()
     ]);
+
     this.usuarios = usuarios;
-    this.rutinas = rutinas.map(r => ({
-      ...r,
-      usuarioNombre: usuarios.find(u => u.id === r.usuarioId)?.nombre
-        + ' ' + (usuarios.find(u => u.id === r.usuarioId)?.apellido || '')
+    this.rutinas = rutinas.map((rutina) => ({
+      ...rutina,
+      usuarioNombre: this.getUsuarioNombre(rutina.usuarioId, usuarios)
     }));
     this.cdr.detectChanges();
   }
 
-  abrirModal(r?: Rutina) {
-    if (r) {
-      this.rutinaForm = { ...r };
+  abrirModal(rutina?: Rutina) {
+    this.errors = {};
+
+    if (rutina) {
+      this.rutinaForm = { ...rutina };
       this.editando = true;
     } else {
       this.rutinaForm = this.initForm();
       this.editando = false;
     }
+
     this.mostrarModal = true;
     this.cdr.detectChanges();
   }
 
   cerrarModal() {
     this.mostrarModal = false;
+    this.errors = {};
     this.cdr.detectChanges();
   }
 
   async guardar() {
+    if (!this.validateForm()) {
+      this.mostrarMensaje('Completa todos los campos clave de la rutina.', 'warning');
+      return;
+    }
+
     try {
+      const payload: Rutina = {
+        ...this.rutinaForm,
+        nombre: this.rutinaForm.nombre.trim(),
+        descripcion: this.rutinaForm.descripcion.trim(),
+        ejercicios: this.rutinaForm.ejercicios.trim(),
+        diasSemana: this.rutinaForm.diasSemana.trim()
+      };
+
       if (this.editando) {
-        await this.rutinaService.update(this.rutinaForm);
-        this.mostrarMensaje('Rutina actualizada', 'success');
+        await this.rutinaService.update(payload);
+        this.mostrarMensaje('Rutina actualizada correctamente.', 'success');
       } else {
-        await this.rutinaService.add(this.rutinaForm);
-        this.mostrarMensaje('Rutina registrada', 'success');
+        await this.rutinaService.add(payload);
+        this.mostrarMensaje('Rutina registrada correctamente.', 'success');
       }
+
       await this.cargarDatos();
       this.cerrarModal();
-    } catch (e) {
-      this.mostrarMensaje('Error al guardar', 'danger');
+    } catch {
+      this.mostrarMensaje('No se pudo guardar la rutina.', 'danger');
     }
   }
 
   async eliminar(id: number) {
-    if (confirm('¿Eliminar esta rutina?')) {
+    if (confirm('¿Deseas eliminar esta rutina?')) {
       await this.rutinaService.delete(id);
       await this.cargarDatos();
-      this.mostrarMensaje('Rutina eliminada', 'warning');
+      this.mostrarMensaje('Rutina eliminada.', 'warning');
     }
   }
 
@@ -103,18 +157,60 @@ export class RutinasComponent implements OnInit {
     this.mensaje = texto;
     this.tipoMensaje = tipo;
     this.cdr.detectChanges();
+
     setTimeout(() => {
       this.mensaje = '';
       this.cdr.detectChanges();
-    }, 3000);
+    }, 3200);
   }
 
   getNivelClass(nivel: string): string {
     const map: Record<string, string> = {
-      'Principiante': 'bg-success',
-      'Intermedio': 'bg-warning text-dark',
-      'Avanzado': 'bg-danger'
+      Principiante: 'green',
+      Intermedio: 'gold',
+      Avanzado: 'red'
     };
-    return map[nivel] || 'bg-secondary';
+    return map[nivel] || 'blue';
+  }
+
+  private validateForm(): boolean {
+    const errors: Record<string, string> = {};
+
+    if (!this.rutinaForm.usuarioId) {
+      errors['usuarioId'] = 'Selecciona un cliente.';
+    }
+
+    if (!this.rutinaForm.nombre.trim()) {
+      errors['nombre'] = 'El nombre de la rutina es obligatorio.';
+    }
+
+    if (!this.rutinaForm.descripcion.trim()) {
+      errors['descripcion'] = 'Agrega una descripción breve.';
+    }
+
+    if (!this.rutinaForm.ejercicios.trim()) {
+      errors['ejercicios'] = 'Incluye al menos una lista de ejercicios.';
+    }
+
+    if (this.rutinaForm.series < 1 || this.rutinaForm.series > 20) {
+      errors['series'] = 'Usa entre 1 y 20 series.';
+    }
+
+    if (this.rutinaForm.repeticiones < 1 || this.rutinaForm.repeticiones > 100) {
+      errors['repeticiones'] = 'Usa entre 1 y 100 repeticiones.';
+    }
+
+    if (!this.rutinaForm.diasSemana.trim()) {
+      errors['diasSemana'] = 'Indica los días de entrenamiento.';
+    }
+
+    this.errors = errors;
+    this.cdr.detectChanges();
+    return Object.keys(errors).length === 0;
+  }
+
+  private getUsuarioNombre(usuarioId: number, usuarios: Usuario[]): string {
+    const usuario = usuarios.find((item) => item.id === usuarioId);
+    return usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Cliente no disponible';
   }
 }

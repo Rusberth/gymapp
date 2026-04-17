@@ -1,0 +1,78 @@
+<div class="page-shell" *ngIf="cliente; else noCliente">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ cliente.nombre }} {{ cliente.apellido }}</h1>
+      <p class="page-subtitle">Ficha completa del cliente con operación, pagos y seguimiento.</p>
+    </div>
+    <a routerLink="/usuarios" class="btn btn-secondary"><i class="bi bi-arrow-left me-2"></i>Volver</a>
+  </div>
+
+  <div class="section-grid mb-4">
+    <div style="grid-column: span 3;"><div class="metric-card tone-blue"><p class="metric-label">Edad</p><h3 class="metric-value">{{ cliente.edad }}</h3><p class="mt-2">años</p></div></div>
+    <div style="grid-column: span 3;"><div class="metric-card tone-green"><p class="metric-label">Total pagado</p><h3 class="metric-value">Bs {{ totalPagado }}</h3><p class="mt-2">Histórico abonado</p></div></div>
+    <div style="grid-column: span 3;"><div class="metric-card tone-gold"><p class="metric-label">Rutinas</p><h3 class="metric-value">{{ rutinas.length }}</h3><p class="mt-2">asignadas</p></div></div>
+    <div style="grid-column: span 3;"><div class="metric-card tone-red"><p class="metric-label">Asistencias</p><h3 class="metric-value">{{ asistencias.length }}</h3><p class="mt-2">registros</p></div></div>
+  </div>
+
+  <div class="section-grid">
+    <div style="grid-column: span 4;">
+      <div class="content-card p-4 h-100">
+        <h2 class="h4 mb-3">Datos de contacto</h2>
+        <div class="toolbar-card mb-3"><strong>Correo</strong><div class="helper-text mt-1">{{ cliente.email }}</div></div>
+        <div class="toolbar-card mb-3"><strong>Telefono</strong><div class="helper-text mt-1">{{ cliente.telefono }}</div></div>
+        <div class="toolbar-card"><strong>Fecha de registro</strong><div class="helper-text mt-1">{{ cliente.fechaRegistro }}</div></div>
+      </div>
+    </div>
+    <div style="grid-column: span 8;">
+      <div class="content-card p-4 h-100">
+        <h2 class="h4 mb-3">Resumen del cliente</h2>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="toolbar-card h-100">
+              <strong class="d-block mb-2">Membresías</strong>
+              <div *ngFor="let m of membresias" class="mb-2">
+                <div>{{ m.tipo }} · Bs {{ m.precio }}</div>
+                <span class="helper-text">{{ m.fechaInicio }} a {{ m.fechaFin }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="toolbar-card h-100">
+              <strong class="d-block mb-2">Pagos recientes</strong>
+              <div *ngFor="let p of pagos.slice(0, 4)" class="mb-2">
+                <div>{{ p.concepto }} · Bs {{ p.monto }}</div>
+                <span class="helper-text">{{ p.fechaPago }} · {{ p.estado }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="toolbar-card h-100">
+              <strong class="d-block mb-2">Rutinas</strong>
+              <div *ngFor="let r of rutinas" class="mb-2">
+                <div>{{ r.nombre }}</div>
+                <span class="helper-text">{{ r.nivel }} · {{ r.diasSemana }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="toolbar-card h-100">
+              <strong class="d-block mb-2">Asistencia reciente</strong>
+              <div *ngFor="let a of asistencias.slice(0, 4)" class="mb-2">
+                <div>{{ a.fecha }} · {{ a.horaEntrada }}</div>
+                <span class="helper-text">{{ a.area }} · {{ a.estado }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noCliente>
+  <div class="page-shell">
+    <div class="content-card">
+      <div class="empty-state"><i class="bi bi-person-x"></i>No se pudo cargar la ficha del cliente.</div>
+    </div>
+  </div>
+</ng-template>

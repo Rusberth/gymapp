@@ -1,0 +1,136 @@
+<div class="page-shell">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Pagos y Caja</h1>
+      <p class="page-subtitle">Controla ingresos, pendientes y movimiento diario de caja.</p>
+    </div>
+    <button class="btn btn-success" (click)="abrirModal()">
+      <i class="bi bi-cash-coin me-2"></i>Registrar pago
+    </button>
+  </div>
+
+  <div class="section-grid mb-4">
+    <div style="grid-column: span 4;"><div class="metric-card tone-green"><p class="metric-label">Recaudado</p><h3 class="metric-value">Bs {{ totalRecaudado }}</h3><p class="mt-2">Pagos confirmados</p></div></div>
+    <div style="grid-column: span 4;"><div class="metric-card tone-gold"><p class="metric-label">Pendiente</p><h3 class="metric-value">Bs {{ pagosPendientesMonto }}</h3><p class="mt-2">Cobros por regularizar</p></div></div>
+    <div style="grid-column: span 4;"><div class="metric-card tone-blue"><p class="metric-label">Caja de hoy</p><h3 class="metric-value">Bs {{ cajaHoy }}</h3><p class="mt-2">Ingresos del día actual</p></div></div>
+  </div>
+
+  <div *ngIf="mensaje" class="alert alert-{{ tipoMensaje }} pro-panel mb-4">{{ mensaje }}</div>
+
+  <div class="toolbar-card mb-4">
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <label class="form-label fw-semibold">Buscar pago</label>
+        <input class="form-control search-input" [(ngModel)]="searchTerm" placeholder="Cliente, concepto o método de pago">
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label fw-semibold">Estado</label>
+        <select class="form-select filter-select" [(ngModel)]="estadoFiltro">
+          <option value="todos">Todos</option>
+          <option value="Pagado">Pagado</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Concepto</th>
+            <th>Método</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pago of pagosFiltrados; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ pago.usuarioNombre }}</strong></td>
+            <td>{{ pago.concepto }}</td>
+            <td>{{ pago.metodoPago }}</td>
+            <td>Bs {{ pago.monto }}</td>
+            <td>{{ pago.fechaPago }}</td>
+            <td><span class="soft-badge" [class.green]="pago.estado === 'Pagado'" [class.gold]="pago.estado === 'Pendiente'">{{ pago.estado }}</span></td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-warning me-2" (click)="abrirModal(pago)"><i class="bi bi-pencil-fill"></i></button>
+              <button class="btn btn-sm btn-outline-danger" (click)="eliminar(pago.id!)"><i class="bi bi-trash-fill"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="pagosFiltrados.length === 0">
+            <td colspan="8"><div class="empty-state"><i class="bi bi-wallet2"></i>No hay pagos que coincidan con el filtro actual.</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-cash-stack me-2"></i>{{ editando ? 'Editar pago' : 'Nuevo pago' }}</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Cliente</label>
+            <select class="form-select" [(ngModel)]="pagoForm.usuarioId">
+              <option [ngValue]="0">Selecciona un cliente</option>
+              <option *ngFor="let u of usuarios" [ngValue]="u.id">{{ u.nombre }} {{ u.apellido }}</option>
+            </select>
+            <small class="text-danger" *ngIf="errors['usuarioId']">{{ errors['usuarioId'] }}</small>
+          </div>
+          <div class="col-sm-7">
+            <label class="form-label fw-semibold">Concepto</label>
+            <input class="form-control" [(ngModel)]="pagoForm.concepto" placeholder="Pago de membresia">
+            <small class="text-danger" *ngIf="errors['concepto']">{{ errors['concepto'] }}</small>
+          </div>
+          <div class="col-sm-5">
+            <label class="form-label fw-semibold">Monto</label>
+            <input class="form-control" type="number" [(ngModel)]="pagoForm.monto">
+            <small class="text-danger" *ngIf="errors['monto']">{{ errors['monto'] }}</small>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Metodo</label>
+            <select class="form-select" [(ngModel)]="pagoForm.metodoPago">
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="QR">QR</option>
+              <option value="Tarjeta">Tarjeta</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Estado</label>
+            <select class="form-select" [(ngModel)]="pagoForm.estado">
+              <option value="Pagado">Pagado</option>
+              <option value="Pendiente">Pendiente</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Fecha</label>
+            <input class="form-control" type="date" [(ngModel)]="pagoForm.fechaPago">
+            <small class="text-danger" *ngIf="errors['fechaPago']">{{ errors['fechaPago'] }}</small>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observacion</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="pagoForm.observacion" placeholder="Detalle opcional del pago"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-success" (click)="guardar()"><i class="bi bi-save me-2"></i>{{ editando ? 'Actualizar' : 'Guardar' }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="mostrarModal" *ngIf="mostrarModal"></div>
